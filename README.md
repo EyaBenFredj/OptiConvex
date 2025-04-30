@@ -103,15 +103,14 @@ subject to: constraints defining the feasible set
 
 ### ✅ 3D Visualization of Feasible Region (Matplotlib)
 
-> 📷 _Insert 3D scatter plot screenshot here_  
-> ![Feasible Region](results/feasible_region.png)
+![image](https://github.com/user-attachments/assets/298934a0-4b9f-40ee-ba7d-648194ed266e)
+
 
 ---
 
 ### ✅ Convergence of PGD
+![image](https://github.com/user-attachments/assets/1c159899-24b1-4b75-99ac-73e7e48c8cd7)
 
-> 📷 _Insert convergence plot (objective value vs iteration)_  
-> ![Convergence](results/convergence_plot.png)
 
 ---
 
