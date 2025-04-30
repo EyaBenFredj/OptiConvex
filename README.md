@@ -1,77 +1,59 @@
 
-# 📊 Convex Optimization Project: KKT & Projected Gradient Descent
 
-🎯 This project solves a **constrained convex optimization problem** using:
-- Symbolic analysis with **Karush-Kuhn-Tucker (KKT)** conditions
-- Numerical optimization using **Projected Gradient Descent (PGD)**
-- Exact solution comparison using **CVXPY**
+# 🧠 Convex Optimization with Projected Gradient Descent (3D Problem)
 
-> 📁 You’ll find the full notebook, report, results, and comparison in this repository.
+## 📌 Project Overview
+
+This project solves a **convex optimization problem with inequality constraints** using the **Projected Gradient Descent** algorithm.
+
+It was developed as part of an academic coursework on **Techniques d’Optimisation**.
+
+We solve a 3-variable quadratic minimization problem and apply:
+
+- Mathematical analysis via KKT conditions
+- 3D visualization of the feasible region
+- Projected Gradient Descent (PGD) implementation
+- Validation with CVXPY (exact convex solver)
 
 ---
 
-## 🧩 Problem Statement
+## ✍️ Problem Statement
 
-We aim to minimize a **strictly convex quadratic function** subject to **convex linear inequality constraints**.
-
-### 🔢 Objective Function
-
-The function to minimize is the squared Euclidean norm:
+### Objective Function
 
 \[
-f(x, y, z) = x^2 + y^2 + z^2
+\min_{x, y, z} \quad f(x, y, z) = x^2 + y^2 + z^2
 \]
 
-This is a strictly convex function because its Hessian is a positive definite diagonal matrix (2I₃).
+This is a convex, differentiable quadratic function — geometrically, it measures the squared distance to the origin.
 
-### 📐 Constraints
-
-The feasible region \( \mathcal{X} \) is defined by 5 convex constraints:
-
-\[
-\begin{cases}
-x + y + z \leq 5 & \text{(constraint 1)} \\
-x - y \leq 1 & \text{(constraint 2)} \\
-x \geq 0 & \text{(constraint 3)} \\
-y \geq 0 & \text{(constraint 4)} \\
-z \geq 0 & \text{(constraint 5)}
-\end{cases}
-\]
-
-Or equivalently, in standard form \( g_i(x) \leq 0 \):
+### Constraints (Feasible Region)
 
 \[
 \begin{cases}
-g_1(x, y, z) = x + y + z - 5 \leq 0 \\
-g_2(x, y, z) = x - y - 1 \leq 0 \\
-g_3(x) = -x \leq 0 \\
-g_4(y) = -y \leq 0 \\
-g_5(z) = -z \leq 0
+x + y + z \leq 5 \\
+x - y \leq 1 \\
+x \geq 0 \\
+y \geq 0 \\
+z \geq 0
 \end{cases}
 \]
 
----
-
-## 📌 Mathematical Formulation
-
-### ✅ Convexity
-
-- **f(x, y, z)** is a convex function (quadratic with positive definite Hessian).
-- All constraints are affine (i.e., linear), and hence convex sets.
-- Thus, this is a **convex optimization problem**, and any local minimum is global.
+These define a **convex polyhedron** in ℝ³. Hence, the entire problem is **convex with inequality constraints**.
 
 ---
 
-## 🧠 Step 1: Karush-Kuhn-Tucker (KKT) Conditions
+## 📐 Mathematical Analysis — KKT Conditions
 
 We define the Lagrangian:
 
 \[
-\mathcal{L}(x, y, z; \lambda_1, ..., \lambda_5) = f(x, y, z) + \sum_{i=1}^5 \lambda_i g_i(x, y, z)
+L(x, y, z, \lambda_1, ..., \lambda_5) = x^2 + y^2 + z^2 + \lambda_1(x + y + z - 5) + \lambda_2(x - y - 1) - \lambda_3 x - \lambda_4 y - \lambda_5 z
 \]
 
-### 🧮 Stationarity (∇L = 0)
+### Karush-Kuhn-Tucker (KKT) Conditions:
 
+1. **Stationarity:**
 \[
 \begin{cases}
 2x + \lambda_1 + \lambda_2 - \lambda_3 = 0 \\
@@ -80,106 +62,127 @@ We define the Lagrangian:
 \end{cases}
 \]
 
-### ✅ Primal Feasibility
+2. **Primal Feasibility:** All constraints must be satisfied
 
-All original constraints must be satisfied:
+3. **Dual Feasibility:** \( \lambda_i \geq 0 \; \forall i \)
 
+4. **Complementary Slackness:**
 \[
-g_i(x, y, z) \leq 0,\quad i = 1,...,5
+\lambda_i g_i(x, y, z) = 0
 \]
 
-### ✅ Dual Feasibility
-
-\[
-\lambda_i \geq 0,\quad i = 1,...,5
-\]
-
-### ✅ Complementary Slackness
-
-\[
-\lambda_i g_i(x, y, z) = 0,\quad i = 1,...,5
-\]
-
-Solving this full nonlinear system gives the optimal point. We used **SymPy** to symbolically derive all conditions.
+> These were derived symbolically using SymPy and matched our expectations from theory.
 
 ---
 
-## 🚀 Step 2: Projected Gradient Descent (PGD)
+## ⚙️ Algorithm: Projected Gradient Descent (PGD)
 
-PGD is an iterative algorithm for constrained optimization:
+PGD is used to solve constrained convex problems of the form:
 
-### 🔁 Algorithm:
+\[
+x_{k+1} = P_\mathcal{X}(x_k - \alpha_k \nabla f(x_k))
+\]
 
-Initialize \( x_0 = [x^{(0)}, y^{(0)}, z^{(0)}] \), step size \( \alpha > 0 \)
+Where:
+- \( P_\mathcal{X} \) is the projection onto the feasible set \( \mathcal{X} \)
+- \( \nabla f(x_k) = [2x, 2y, 2z] \)
+- Step size \( \alpha_k \) is constant or adaptive
 
-Repeat until convergence:
-1. Take a gradient step:
-   \[
-   x_{k+1/2} = x_k - \alpha \nabla f(x_k)
-   \]
-   where \( \nabla f(x_k) = [2x_k, 2y_k, 2z_k] \)
-2. Project onto feasible region:
-   \[
-   x_{k+1} = P_{\mathcal{X}}(x_{k+1/2})
-   \]
-   This is done by solving:
-   \[
-   x_{k+1} = \arg\min_{x' \in \mathcal{X}} ||x' - x_{k+1/2}||^2
-   \]
+### Projection Step
 
-This projection step is formulated and solved as a **convex quadratic program** using CVXPY.
-
----
-
-## ✅ Step 3: Comparison with Exact Solution (CVXPY)
-
-We also solved the same problem directly using CVXPY:
+We use CVXPY to project a point onto the feasible region:
 
 ```python
-cp.Problem(cp.Minimize(cp.sum_squares(x)), constraints).solve()
+objective = Minimize(‖x_var - x_input‖²)
+subject to: constraints defining the feasible set
 ```
 
-This gives the exact solution \( x^*_{\text{cvxpy}} \), which we compared to the result of PGD.
+---
 
-✅ PGD converged very close to this exact solution — confirming correctness.
+## 📊 Screenshots & Visuals
+
+### ✅ 3D Visualization of Feasible Region (Matplotlib)
+
+> 📷 _Insert 3D scatter plot screenshot here_  
+> ![Feasible Region](results/feasible_region.png)
 
 ---
 
-## 📈 Results
+### ✅ Convergence of PGD
 
-- ✅ Convergence of PGD shown in `results/convergence_plot.png`
-- ✅ Final solution: `x ≈ [ ..., ..., ... ]`
-- ✅ Optimal value: `f(x*) ≈ ...`
-
-> The PGD solution matches the CVXPY solution up to small numerical error — confirming the algorithm works correctly!
+> 📷 _Insert convergence plot (objective value vs iteration)_  
+> ![Convergence](results/convergence_plot.png)
 
 ---
 
-## 📂 Files
+### ✅ Comparison with Exact Solution (CVXPY)
 
-| File | Description |
-|------|-------------|
-| `optimization_project.ipynb` | Full Jupyter notebook with code, math & plots |
-| `report.pdf` / `report.pptx` | Final report export |
-| `video_presentation.mp4` | 5-minute explanation |
-| `results/` | Contains plots and exported files |
-| `README.md` | This file |
+> PGD result:
+```python
+x ≈ [x1, y1, z1]
+f(x) ≈ 𝑓₁
+```
+
+> CVXPY result:
+```python
+x* ≈ [x2, y2, z2]
+f(x*) ≈ 𝑓₂
+```
+
+> ✔️ Difference: very small → confirms correct convergence.
+
+> 📷 _Insert screenshot of printed values or comparison table_  
+> ![Comparison](results/comparison_table.png)
 
 ---
 
-## 💡 How to Run
+## 📁 Project Structure
 
-> Requirements:
+```
+optimization-project/
+│
+├── optimization_project.ipynb       # Main notebook with code & explanations
+├── report.pdf / report.pptx         # Final report version (optional export)
+├── video_presentation.mp4           # ≤ 5 min screencast presentation (optional)
+├── README.md                        # This file
+│
+├── results/                         # Auto-generated plots & results
+│   ├── feasible_region.png
+│   ├── convergence_plot.png
+│   └── comparison_table.png
+```
+
+---
+
+## 🚀 How to Run This Project
+
+### Prerequisites:
+- Python ≥ 3.8
+- Jupyter Notebook
+- Required packages:
 ```bash
-pip install numpy matplotlib sympy cvxpy
+pip install numpy matplotlib cvxpy sympy
 ```
 
-> Then open in Jupyter:
+### Running:
 ```bash
-jupyter notebook optimization_project.ipynb
+jupyter notebook Optimization.ipynb
 ```
 
 ---
 
+## 🎓 Educational Takeaways
 
+- 💡 How to model convex problems symbolically and numerically
+- 🔍 How to apply KKT conditions and interpret them geometrically
+- 🧮 How Projected Gradient Descent approximates constrained minima
+- ✅ How to validate numerical results with exact solvers like CVXPY
 
+---
+
+*
+---
+
+## 📝 License
+
+This project is intended for academic use only.
