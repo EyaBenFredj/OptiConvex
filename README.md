@@ -130,8 +130,8 @@ f(x*) ≈ 𝑓₂
 
 > ✔️ Difference: very small → confirms correct convergence.
 
-> 📷 _Insert screenshot of printed values or comparison table_  
-> ![Comparison](results/comparison_table.png)
+![image](https://github.com/user-attachments/assets/e10cf09a-0dde-49c4-b542-10e62e6b307a)
+
 
 ---
 
